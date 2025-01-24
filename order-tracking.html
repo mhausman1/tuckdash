@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order - TuckDash</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: #000000;
+            border-bottom: 5px solid #FF0000;
+        }
+
+        .logo {
+            color: white;
+            font-size: 2rem;
+        }
+
+        .home-btn {
+            background: #FF0000;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .tracking-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .order-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .status-timeline {
+            display: flex;
+            justify-content: space-between;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .status-point {
+            width: 30px;
+            height: 30px;
+            background: #ddd;
+            border-radius: 50%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .status-point.active {
+            background: #FF0000;
+        }
+
+        .status-line {
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #ddd;
+            z-index: 1;
+        }
+
+        .status-label {
+            position: absolute;
+            top: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 0.8rem;
+        }
+
+        .order-details {
+            margin-top: 2rem;
+        }
+
+        .items-list {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .dasher-controls {
+            display: none; /* Hidden by default */
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .status-btn {
+            background: #000000;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1 class="logo">TuckDash</h1>
+            <a href="menu.html" class="home-btn">Home</a>
+        </div>
+    </header>
+
+    <div class="tracking-container">
+        <div class="order-card">
+            <h2>Order #<span id="orderNumber"></span></h2>
+            
+            <div class="status-timeline">
+                <div class="status-line"></div>
+                <div class="status-point" id="pending">
+                    <span class="status-label">Order Placed</span>
+                </div>
+                <div class="status-point" id="accepted">
+                    <span class="status-label">Accepted</span>
+                </div>
+                <div class="status-point" id="at_tuck">
+                    <span class="status-label">At Tuck</span>
+                </div>
+                <div class="status-point" id="on_way">
+                    <span class="status-label">On Way</span>
+                </div>
+                <div class="status-point" id="arrived">
+                    <span class="status-label">Arrived</span>
+                </div>
+            </div>
+
+            <div class="order-details" id="orderDetails">
+                <!-- Order details will be populated here -->
+            </div>
+
+            <div class="dasher-controls" id="dasherControls">
+                <h3>Update Order Status</h3>
+                <button class="status-btn" onclick="updateStatus('at_tuck')">At Tuck</button>
+                <button class="status-btn" onclick="updateStatus('on_way')">On Way</button>
+                <button class="status-btn" onclick="updateStatus('arrived')">Arrived</button>
+                <button class="status-btn" onclick="updateStatus('completed')">Complete Order</button>
+            </div>
+
+            <div class="chat-section">
+                <h3>Chat</h3>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input">
+                    <input type="text" id="messageInput" placeholder="Type a message...">
+                    <button class="status-btn" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentOrder = null;
+
+        window.onload = function() {
+            currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('orderId');
+            
+            if (!orderId) {
+                alert('No order specified');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            loadOrder(orderId);
+            setInterval(() => {
+                loadOrder(orderId);
+                loadChat(orderId);
+            }, 5000);
+        }
+
+        function loadOrder(orderId) {
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            currentOrder = orders.find(o => o.id === orderId);
+
+            if (!currentOrder) {
+                alert('Order not found');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const dasherControls = document.getElementById('dasherControls');
+            if (currentUser && 
+                currentUser.type === 'dasher' && 
+                currentOrder.dasherId === currentUser.id) {
+                dasherControls.style.display = 'block';
+            } else {
+                dasherControls.style.display = 'none';
+            }
+
+            updateOrderDisplay();
+            loadChat(orderId);
+        }
+
+        function updateStatus(newStatus) {
+            if (!currentOrder) return;
+
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const orderIndex = orders.findIndex(o => o.id === currentOrder.id);
+            
+            if (orderIndex !== -1) {
+                orders[orderIndex].status = newStatus;
+                orders[orderIndex].lastUpdated = new Date().toISOString();
+                
+                localStorage.setItem('orders', JSON.stringify(orders));
+                
+                currentOrder = orders[orderIndex];
+                
+                updateOrderDisplay();
+                
+                if (newStatus === 'completed' && currentUser.type === 'dasher') {
+                    alert('Order completed! Redirecting to dashboard...');
+                    window.location.href = 'dasher.html';
+                }
+            }
+        }
+
+        function updateOrderDisplay() {
+            document.getElementById('orderNumber').textContent = currentOrder.id.slice(-4);
+            updateStatusTimeline(currentOrder.status);
+
+            const details = document.getElementById('orderDetails');
+            details.innerHTML = `
+                <h3>Order Details</h3>
+                <p><strong>Status:</strong> ${currentOrder.status.toUpperCase()}</p>
+                <p><strong>Customer:</strong> ${currentOrder.customer.name}</p>
+                <p><strong>Delivery to:</strong> ${currentOrder.customer.dorm}</p>
+                
+                <div class="items-list">
+                    <h4>Items:</h4>
+                    ${currentOrder.items.map(item => `
+                        <p>${item.item} - $${item.price}
+                           ${item.customizations ? 
+                             `<br><small>(${item.customizations.join(', ')})</small>` : 
+                             ''}
+                        </p>
+                    `).join('')}
+                </div>
+
+                <p><strong>Subtotal:</strong> $${currentOrder.subtotal}</p>
+                <p><strong>Tip:</strong> $${currentOrder.tip}</p>
+                <p><strong>Total:</strong> $${currentOrder.total}</p>
+            `;
+        }
+
+        function updateStatusTimeline(status) {
+            const statuses = ['pending', 'accepted', 'at_tuck', 'on_way', 'arrived'];
+            const currentIndex = statuses.indexOf(status);
+            
+            statuses.forEach((s, index) => {
+                const point = document.getElementById(s);
+                if (point && index <= currentIndex) {
+                    point.classList.add('active');
+                } else if (point) {
+                    point.classList.remove('active');
+                }
+            });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message && currentOrder) {
+                const chat = JSON.parse(localStorage.getItem(`chat_${currentOrder.id}`) || '[]');
+                chat.push({
+                    text: message,
+                    sender: currentUser ? currentUser.type : 'customer',
+                    name: currentUser ? currentUser.name : 'Customer',
+                    timestamp: new Date().toISOString()
+                });
+                localStorage.setItem(`chat_${currentOrder.id}`, JSON.stringify(chat));
+                input.value = '';
+                loadChat(currentOrder.id);
+            }
+        }
+
+        function loadChat(orderId) {
+            const chat = JSON.parse(localStorage.getItem(`chat_${orderId}`) || '[]');
+            const container = document.getElementById('chatMessages');
+            
+            container.innerHTML = chat.map(msg => `
+                <div class="message ${msg.sender}">
+                    <strong>${msg.name}:</strong> ${msg.text}
+                    <small>${new Date(msg.timestamp).toLocaleTimeString()}</small>
+                </div>
+            `).join('');
+            
+            container.scrollTop = container.scrollHeight;
+        }
+    </script>
+</body>
+</html> 

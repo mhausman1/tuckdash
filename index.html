@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TuckDash - Pomfret School</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #000000;
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 5px solid #FF0000;
+        }
+
+        .logo {
+            color: white;
+            font-size: 4rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.3);
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .choice-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .main-buttons {
+            display: flex;
+            gap: 4rem;
+        }
+
+        .choice-btn {
+            display: flex;
+            flex-direction: column;
+            padding: 3rem;
+            border-radius: 15px;
+            text-decoration: none;
+            text-align: center;
+            width: 350px;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .choice-btn:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .order-btn {
+            background: #000000;
+            color: white;
+            border: 3px solid #FF0000;
+        }
+
+        .dasher-btn {
+            background: #FF0000;
+            color: white;
+            border: 3px solid #000000;
+        }
+
+        .btn-text {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .btn-subtext {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* Form Styles */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+        }
+
+        .signup-form {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            z-index: 101;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .close-btn {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .login-form {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            z-index: 101;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .form-switch {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .form-switch a {
+            color: #FF0000;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .form-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            z-index: 101;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .form-switch:last-child {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .track-btn {
+            background: #000000;
+            color: white;
+            border: 3px solid #FF0000;
+            width: 350px;
+            margin-top: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .track-btn:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .track-form {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            z-index: 101;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .track-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .track-option {
+            flex: 1;
+            padding: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .track-option.active {
+            border-bottom: 2px solid #FF0000;
+            color: #FF0000;
+        }
+    </style>
+    <script type="module">
+        import { db, auth } from './firebase-config.js';
+    </script>
+    <!-- Add Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth.js"></script>
+</head>
+<body>
+    <div class="main-container">
+        <header>
+            <h1 class="logo">TuckDash</h1>
+        </header>
+
+        <main class="content">
+            <div class="choice-buttons">
+                <div class="main-buttons">
+                    <a href="#" class="choice-btn order-btn" onclick="showForm('customer')">
+                        <span class="btn-text">ORDER NOW</span>
+                        <span class="btn-subtext">Get Tuck snacks delivered to your dorm</span>
+                    </a>
+                    
+                    <a href="#" class="choice-btn dasher-btn" onclick="showForm('dasher')">
+                        <span class="btn-text">BECOME A DASHER</span>
+                        <span class="btn-subtext">Earn money delivering</span>
+                    </a>
+                </div>
+
+                <a href="#" class="choice-btn track-btn" onclick="showTrackOrder()">
+                    <span class="btn-text">TRACK ORDER</span>
+                    <span class="btn-subtext">Track your current order</span>
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Login Form -->
+    <div class="form-container" id="loginForm">
+        <button class="close-btn" onclick="hideAllForms()">&times;</button>
+        <h2>Login</h2>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="loginEmail">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="loginPassword">
+        </div>
+        <button class="choice-btn order-btn" onclick="login()" style="width:100%">Login</button>
+        <div class="form-switch">
+            <span>Don't have an account? </span>
+            <a onclick="switchToSignup()">Sign Up</a>
+        </div>
+    </div>
+
+    <!-- Customer Signup Form -->
+    <div class="form-container" id="customerForm">
+        <button class="close-btn" onclick="hideAllForms()">&times;</button>
+        <h2>Create Customer Account</h2>
+        <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="customerName">
+        </div>
+        <div class="form-group">
+            <label>School Email</label>
+            <input type="email" id="customerEmail">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="customerPassword">
+        </div>
+        <div class="form-group">
+            <label>Dorm & Room Number</label>
+            <input type="text" id="customerDorm">
+        </div>
+        <button class="choice-btn order-btn" onclick="signup('customer')" style="width:100%">Create Account</button>
+    </div>
+
+    <!-- Dasher Signup Form -->
+    <div class="form-container" id="dasherForm">
+        <button class="close-btn" onclick="hideAllForms()">&times;</button>
+        <h2>Become a Dasher</h2>
+        <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="dasherName">
+        </div>
+        <div class="form-group">
+            <label>School Email</label>
+            <input type="email" id="dasherEmail">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="dasherPassword">
+        </div>
+        <div class="form-group">
+            <label>Venmo Username</label>
+            <input type="text" id="dasherVenmo">
+        </div>
+        <button class="choice-btn dasher-btn" onclick="signup('dasher')" style="width:100%">Start Dashing</button>
+    </div>
+
+    <!-- Developer Button -->
+    <div style="position: fixed; left: 10px; bottom: 10px; z-index: 1000;">
+        <button onclick="showDeveloperLogin()" 
+                style="background: none; 
+                       border: 1px solid #FF0000; 
+                       color: #FF0000; 
+                       font-size: 12px; 
+                       cursor: pointer; 
+                       padding: 5px 10px;
+                       opacity: 0.4;
+                       border-radius: 3px;
+                       transition: opacity 0.3s;">
+            Developer
+        </button>
+    </div>
+
+    <!-- Add Track Order Form -->
+    <div class="track-form" id="trackForm">
+        <button class="close-btn" onclick="hideAllForms()">&times;</button>
+        <h2>Track Your Order</h2>
+        <div class="form-group">
+            <label>Order Number</label>
+            <input type="text" id="orderNumber" placeholder="Enter your 4-digit order number">
+        </div>
+        <button class="choice-btn order-btn" onclick="trackOrder()" style="width:100%">Track Order</button>
+    </div>
+
+    <script>
+        let currentType = '';
+
+        function showForm(type) {
+            currentType = type;
+            hideAllForms();
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('loginForm').style.display = 'block';
+            
+            const loginBtn = document.querySelector('#loginForm .choice-btn');
+            loginBtn.textContent = type === 'customer' ? 'Login to Order' : 'Login as Dasher';
+        }
+
+        function hideAllForms() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('customerForm').style.display = 'none';
+            document.getElementById('dasherForm').style.display = 'none';
+            document.getElementById('trackForm').style.display = 'none';
+        }
+
+        function switchToSignup() {
+            hideAllForms();
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById(currentType + 'Form').style.display = 'block';
+        }
+
+        function switchToLogin() {
+            hideAllForms();
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('loginForm').style.display = 'block';
+        }
+
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                alert('Please enter both email and password');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                user.type = currentType;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                
+                if (currentType === 'dasher') {
+                    window.location.href = 'dasher.html';
+                } else {
+                    window.location.href = 'menu.html';
+                }
+            } else {
+                alert('Invalid email or password');
+            }
+        }
+
+        function signup(type) {
+            const name = document.getElementById(type + 'Name').value;
+            const email = document.getElementById(type + 'Email').value;
+            const password = document.getElementById(type + 'Password').value;
+
+            if (!name || !email || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const user = {
+                id: Date.now().toString(),
+                name: name,
+                email: email,
+                password: password,
+                type: type
+            };
+
+            if (type === 'customer') {
+                user.dorm = document.getElementById('customerDorm').value;
+                if (!user.dorm) {
+                    alert('Please enter your dorm and room number');
+                    return;
+                }
+            } else {
+                user.venmo = document.getElementById('dasherVenmo').value;
+                if (!user.venmo) {
+                    alert('Please enter your Venmo username');
+                    return;
+                }
+            }
+
+            // Store user in localStorage
+            localStorage.setItem('currentUser', JSON.stringify(user));
+
+            // Redirect to appropriate page
+            window.location.href = type === 'customer' ? 'menu.html' : 'dasher.html';
+        }
+
+        function showDeveloperLogin() {
+            const email = prompt('Developer Email:');
+            const password = prompt('Developer Password:');
+
+            if (email === 'mhausman.25@pomfret.org' && password === 'Miramax1') {
+                localStorage.setItem('devAccess', 'true');
+                window.location.href = 'developer.html';
+            } else {
+                alert('Invalid developer credentials');
+            }
+        }
+
+        function showTrackOrder() {
+            hideAllForms();
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('trackForm').style.display = 'block';
+        }
+
+        function trackOrder() {
+            try {
+                const orderNum = document.getElementById('orderNumber').value.trim();
+                console.log('Tracking order number:', orderNum); // Debug log
+
+                if (!orderNum) {
+                    alert('Please enter your order number');
+                    return;
+                }
+
+                // Get all orders
+                const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+                console.log('Found orders:', orders); // Debug log
+
+                // Find order by number
+                const order = orders.find(o => {
+                    if (!o || !o.id) return false;
+                    const lastFour = o.id.toString().slice(-4);
+                    console.log('Comparing:', lastFour, orderNum); // Debug log
+                    return lastFour === orderNum;
+                });
+
+                console.log('Found order:', order); // Debug log
+
+                if (order) {
+                    window.location.href = `order-tracking.html?orderId=${order.id}`;
+                } else {
+                    alert('Order not found. Please check your order number.');
+                }
+            } catch (error) {
+                console.error('Error tracking order:', error);
+                alert('Error tracking order. Please try again.');
+            }
+        }
+
+        // Check if user is already logged in
+        window.onload = function() {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (user) {
+                window.location.href = user.type === 'customer' ? 'menu.html' : 'dasher.html';
+            }
+        }
+
+        function showLoginTracking() {
+            document.getElementById('loginTracking').style.display = 'block';
+            document.getElementById('numberTracking').style.display = 'none';
+        }
+
+        function showNumberTracking() {
+            document.getElementById('loginTracking').style.display = 'none';
+            document.getElementById('numberTracking').style.display = 'block';
+        }
+
+        function trackWithLogin() {
+            const email = document.getElementById('trackEmail').value;
+            const password = document.getElementById('trackPassword').value;
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+                const userOrders = orders.filter(o => o.customer.email === email);
+                
+                if (userOrders.length > 0) {
+                    // Get most recent order
+                    const latestOrder = userOrders[userOrders.length - 1];
+                    window.location.href = `order-tracking.html?orderId=${latestOrder.id}`;
+                } else {
+                    alert('No orders found for this account.');
+                }
+            } else {
+                alert('Invalid email or password');
+            }
+        }
+
+        function trackWithNumber() {
+            const orderNum = document.getElementById('orderNumber').value.trim();
+            if (!orderNum) {
+                alert('Please enter your order number');
+                return;
+            }
+
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const order = orders.find(o => o.id.slice(-4) === orderNum);
+
+            if (order) {
+                window.location.href = `order-tracking.html?orderId=${order.id}`;
+            } else {
+                alert('Order not found. Please check your order number.');
+            }
+        }
+    </script>
+</body>
+</html> 

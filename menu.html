@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TuckDash Menu</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f5f5;
+        }
+
+        header {
+            background: #000000;
+            padding: 1rem 2rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            border-bottom: 5px solid #FF0000;
+        }
+
+        .logo {
+            color: white;
+            font-size: 2rem;
+        }
+
+        .menu-container {
+            max-width: 1200px;
+            margin: 80px auto 0;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .menu-category {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .category-title {
+            color: #000000;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            border-bottom: 3px solid #FF0000;
+            padding-bottom: 0.5rem;
+        }
+
+        .menu-item {
+            background: #f8f8f8;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-name {
+            font-weight: 600;
+        }
+
+        .item-price {
+            color: #FF0000;
+            font-weight: 600;
+        }
+
+        .customization {
+            margin-top: 1rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #ddd;
+        }
+
+        .add-to-cart {
+            background: #000000;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 1rem;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .add-to-cart:hover {
+            background: #FF0000;
+        }
+
+        /* Cart Styles */
+        .cart {
+            position: fixed;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 350px;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            transform: translateX(100%);
+            transition: transform 0.3s;
+            z-index: 1000;
+            padding-top: 80px;
+        }
+
+        .cart.open {
+            transform: translateX(0);
+        }
+
+        .cart-content {
+            padding: 1rem;
+            height: calc(100% - 200px);
+            overflow-y: auto;
+        }
+
+        .cart-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-total {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+
+        .cart-btn {
+            position: fixed;
+            right: 120px;
+            top: 15px;
+            background: #000000;
+            color: white;
+            border: 2px solid #FF0000;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 101;
+        }
+
+        /* Payment Modal */
+        .payment-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 1002;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .payment-option {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            margin: 1rem 0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .payment-option:hover {
+            border-color: #FF0000;
+        }
+
+        .payment-option input {
+            margin-right: 1rem;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1001;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+            background: #000000;
+            border-bottom: 5px solid #FF0000;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            color: white;
+            font-size: 2rem;
+        }
+
+        .logout-btn {
+            background: #FF0000;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-left: 1rem;
+        }
+
+        .logout-btn:hover {
+            background: #cc0000;
+        }
+
+        .tip-notice {
+            background: #000000;
+            color: white;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+            border-left: 5px solid #FF0000;
+        }
+
+        .payment-info {
+            background: #f5f5f5;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .mandatory-tip {
+            color: #FF0000;
+            font-weight: bold;
+        }
+
+        .tip-section {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border: 2px solid #eee;
+        }
+
+        .tip-info {
+            color: #FF0000;
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+        }
+
+        .tip-slider-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .tip-slider {
+            flex: 1;
+            height: 10px;
+            -webkit-appearance: none;
+            background: #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .tip-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #FF0000;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .tip-slider::-webkit-slider-thumb:hover {
+            background: #cc0000;
+        }
+
+        .tip-amount {
+            font-size: 1.2rem;
+            font-weight: bold;
+            min-width: 60px;
+        }
+
+        .tip-labels {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .payment-section {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+        }
+
+        .payment-modal {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            position: relative;
+            z-index: 1001;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .payment-options {
+            margin: 2rem 0;
+        }
+
+        .venmo-btn, .qr-btn {
+            background: #008CFF;
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+        }
+
+        .confirm-btn {
+            width: 100%;
+            padding: 1rem;
+            background: #000000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .payment-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .venmo-qr {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            display: block;
+            border-radius: 10px;
+        }
+
+        .venmo-option {
+            text-align: center;
+        }
+
+        .venmo-btn {
+            background: #008CFF;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .confirm-btn {
+            width: 100%;
+            padding: 1rem;
+            background: #000000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1 class="logo">TuckDash</h1>
+            <div>
+                <button class="cart-btn" onclick="toggleCart()">
+                    Cart (<span id="cartCount">0</span>)
+                </button>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="menu-container">
+        <!-- Breakfast Items -->
+        <div class="menu-category">
+            <h2 class="category-title">Breakfast</h2>
+            <div class="menu-item">
+                <div class="item-header">
+                    <span class="item-name">Bacon Egg & Cheese</span>
+                    <span class="item-price">$6</span>
+                </div>
+                <button class="add-to-cart" onclick="addToCart('Bacon Egg & Cheese', 6)">Add to Cart</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-header">
+                    <span class="item-name">Waffle</span>
+                    <span class="item-price">$6</span>
+                </div>
+                <button class="add-to-cart" onclick="addToCart('Waffle', 6)">Add to Cart</button>
+            </div>
+        </div>
+
+        <!-- Main Items -->
+        <div class="menu-category">
+            <h2 class="category-title">Main Items</h2>
+            <div class="menu-item">
+                <div class="item-header">
+                    <span class="item-name">Burger</span>
+                    <span class="item-price">$8</span>
+                </div>
+                <div class="customization">
+                    <label>
+                        <input type="checkbox" name="bacon" value="1"> Add Bacon (+$1)
+                    </label><br>
+                    <label>
+                        <input type="checkbox" name="cheese" value="1"> Add Cheese (+$0.50)
+                    </label>
+                </div>
+                <button class="add-to-cart" onclick="addToCart('Burger', 8, true)">Add to Cart</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-header">
+                    <span class="item-name">Mozzarella Sticks</span>
+                    <span class="item-price">$7</span>
+                </div>
+                <button class="add-to-cart" onclick="addToCart('Mozzarella Sticks', 7)">Add to Cart</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-header">
+                    <span class="item-name">Egg Rolls</span>
+                    <span class="item-price">$7</span>
+                </div>
+                <button class="add-to-cart" onclick="addToCart('Egg Rolls', 7)">Add to Cart</button>
+            </div>
+        </div>
+
+        <!-- Drinks -->
+        <div class="menu-category">
+            <h2 class="category-title">Drinks</h2>
+            <div class="menu-item">
+                <div class="item-header">
+                    <span class="item-name">Soda</span>
+                    <span class="item-price">$4</span>
+                </div>
+                <div class="customization">
+                    <select id="sodaType" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+                        <option value="Shirley Temple">Shirley Temple</option>
+                        <option value="Diet Coke">Diet Coke</option>
+                        <option value="Sprite">Sprite</option>
+                        <option value="Coke">Coke</option>
+                    </select>
+                </div>
+                <button class="add-to-cart" onclick="addToCart('Soda', 4, false, true)">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart -->
+    <div class="cart" id="cart">
+        <div class="cart-content">
+            <h2>Your Order</h2>
+            <div class="tip-section">
+                <h3>Dasher Tip</h3>
+                <p class="tip-info">Higher tips = Faster delivery! Dashers see tip amount when choosing orders.</p>
+                <div class="tip-slider-container">
+                    <input type="range" id="tipSlider" min="0" max="20" value="0" step="1" class="tip-slider">
+                    <div class="tip-amount">$<span id="tipValue">0</span></div>
+                </div>
+                <div class="tip-labels">
+                    <span>$0</span>
+                    <span>$10</span>
+                    <span>$20</span>
+                </div>
+            </div>
+            <div class="payment-info">
+                <p>Your Pomfret card will be used for food payment. 
+                   The dasher will take your card to the Tuck and return it with your food.</p>
+            </div>
+            <div id="cartItems"></div>
+        </div>
+        <div class="cart-total">
+            <div>Subtotal: $<span id="subtotal">0.00</span></div>
+            <div>Dasher Fee: $3.00</div>
+            <div>Tip: $<span id="tipAmount">0.00</span></div>
+            <div><strong>Total: $<span id="total">0.00</span></strong></div>
+            <button class="checkout-btn" onclick="checkout()">Checkout</button>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="overlay" id="overlay" onclick="hidePayment()"></div>
+    <div class="payment-modal" id="paymentModal">
+        <h2>Select Payment Method</h2>
+        <div class="payment-option">
+            <input type="radio" name="payment" value="cash" id="cashOption">
+            <label for="cashOption">
+                <h3>Cash</h3>
+                <p>Pay with cash directly to your dasher</p>
+            </label>
+        </div>
+        <div class="payment-option">
+            <input type="radio" name="payment" value="venmo" id="venmoOption">
+            <label for="venmoOption">
+                <h3>Venmo</h3>
+                <p>Pay through Venmo to your dasher</p>
+            </label>
+        </div>
+        <button class="add-to-cart" onclick="processPayment()">Place Order</button>
+    </div>
+
+    <!-- Add this payment section before checkout -->
+    <div class="payment-section" id="paymentSection" style="display: none;">
+        <div class="overlay"></div>
+        <div class="payment-modal">
+            <h2>Payment Required</h2>
+            <p>Total Amount: $<span id="paymentAmount">0.00</span></p>
+            <div class="payment-options">
+                <div class="venmo-option">
+                    <h3>Pay with Venmo</h3>
+                    <p>Pay to: @mhausman</p>
+                    <div class="venmo-qr">
+                        <img src="venmo-qr.png" alt="Venmo QR Code" class="qr-code">
+                        <p>Scan QR code or click button below</p>
+                    </div>
+                    <div class="payment-buttons">
+                        <a href="https://account.venmo.com/u/mhausman" target="_blank" class="venmo-btn">
+                            Open Venmo
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <button onclick="confirmPayment()" class="confirm-btn">
+                I've Completed Payment
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let cart = [];
+
+        window.onload = function() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser || currentUser.type !== 'customer') {
+                window.location.href = 'index.html';
+                return;
+            }
+            updateCart();
+        }
+
+        function toggleCart() {
+            document.getElementById('cart').classList.toggle('open');
+        }
+
+        function addToCart(item, basePrice, isBurger = false, isSoda = false) {
+            let price = basePrice;
+            let customizations = [];
+
+            if (isBurger) {
+                if (document.querySelector('input[name="bacon"]').checked) {
+                    price += 1;
+                    customizations.push('Bacon');
+                }
+                if (document.querySelector('input[name="cheese"]').checked) {
+                    price += 0.50;
+                    customizations.push('Cheese');
+                }
+            }
+
+            if (isSoda) {
+                const sodaType = document.getElementById('sodaType').value;
+                customizations.push(sodaType);
+            }
+
+            cart.push({
+                item: item,
+                price: price,
+                customizations: customizations
+            });
+
+            updateCart();
+            toggleCart();
+        }
+
+        function updateCart() {
+            const cartItems = document.getElementById('cartItems');
+            cartItems.innerHTML = '';
+            
+            let subtotal = 0;
+            cart.forEach((item, index) => {
+                subtotal += item.price;
+                cartItems.innerHTML += `
+                    <div class="cart-item">
+                        <div>${item.item} ${item.customizations ? `(${item.customizations.join(', ')})` : ''}</div>
+                        <div>$${item.price.toFixed(2)} 
+                            <button onclick="removeFromCart(${index})">Remove</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const dasherFee = 3.00;
+            const tip = parseFloat(document.getElementById('tipSlider').value) || 0;
+            const total = subtotal + dasherFee + tip;
+
+            document.getElementById('cartCount').textContent = cart.length;
+            document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+            document.getElementById('tipAmount').textContent = tip.toFixed(2);
+            document.getElementById('total').textContent = total.toFixed(2);
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+
+        function showPayment() {
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('paymentModal').style.display = 'block';
+        }
+
+        function hidePayment() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('paymentModal').style.display = 'none';
+        }
+
+        function processPayment() {
+            const paymentMethod = document.querySelector('input[name="payment"]:checked');
+            if (!paymentMethod) {
+                alert('Please select a payment method');
+                return;
+            }
+
+            const order = {
+                items: cart,
+                total: parseFloat(document.getElementById('cartTotal').textContent),
+                paymentMethod: paymentMethod.value,
+                customer: JSON.parse(localStorage.getItem('currentUser')),
+                status: 'pending',
+                timestamp: new Date().toISOString()
+            };
+
+            // Store order in localStorage
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push(order);
+            localStorage.setItem('orders', JSON.stringify(orders));
+
+            // Notify dashers
+            const notifications = JSON.parse(localStorage.getItem('dasherNotifications') || '[]');
+            notifications.push({
+                orderId: Date.now(),
+                order: order,
+                timestamp: new Date().toISOString()
+            });
+            localStorage.setItem('dasherNotifications', JSON.stringify(notifications));
+
+            alert('Order placed successfully! A dasher will pick up your order soon.');
+            cart = [];
+            updateCart();
+            hidePayment();
+            toggleCart();
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                alert('Please log in to place an order');
+                return;
+            }
+
+            // Create order
+            const orderId = Date.now().toString();
+            const order = {
+                id: orderId,
+                items: [...cart],
+                subtotal: parseFloat(document.getElementById('subtotal').textContent),
+                tip: parseFloat(document.getElementById('tipValue').textContent),
+                total: parseFloat(document.getElementById('total').textContent),
+                customer: currentUser,
+                status: 'pending',
+                timestamp: new Date().toISOString()
+            };
+
+            // Store order
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push(order);
+            localStorage.setItem('orders', JSON.stringify(orders));
+
+            // Clear cart
+            cart = [];
+            updateCart();
+
+            // Redirect to Venmo
+            const venmoURL = 'https://account.venmo.com/u/mhausman';
+            window.open(venmoURL, '_blank');
+            
+            // Redirect to tracking
+            window.location.href = `order-tracking.html?orderId=${orderId}`;
+        }
+
+        function confirmPayment() {
+            // Get pending order
+            const order = JSON.parse(localStorage.getItem('pendingOrder'));
+            
+            if (!order) {
+                alert('Error processing order. Please try again.');
+                return;
+            }
+
+            // Save order to orders list
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push(order);
+            localStorage.setItem('orders', JSON.stringify(orders));
+
+            // Clear cart and pending order
+            cart = [];
+            localStorage.removeItem('pendingOrder');
+            updateCart();
+
+            // Hide payment section
+            document.getElementById('paymentSection').style.display = 'none';
+
+            // Show confirmation and redirect
+            alert(`Order placed successfully!\nYour order number is: ${order.id.slice(-4)}`);
+            window.location.href = `order-tracking.html?orderId=${order.id}`;
+        }
+
+        function showQRCode() {
+            // Add your Venmo QR code image display logic here
+            alert('Scan the Venmo QR code to pay @mhausman');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const tipSlider = document.getElementById('tipSlider');
+            if (tipSlider) {
+                tipSlider.addEventListener('input', updateTip);
+            }
+        });
+
+        function updateTip() {
+            const tipSlider = document.getElementById('tipSlider');
+            const tipValue = document.getElementById('tipValue');
+            const tipAmount = document.getElementById('tipAmount');
+            
+            if (tipSlider && tipValue && tipAmount) {
+                tipValue.textContent = tipSlider.value;
+                tipAmount.textContent = tipSlider.value;
+                updateCart(); // Update totals when tip changes
+            }
+        }
+    </script>
+</body>
+</html> 

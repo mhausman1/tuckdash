@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TuckDash - My Account</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: #000000;
+            border-bottom: 5px solid #FF0000;
+        }
+
+        .logo {
+            color: white;
+            font-size: 2rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            background: #FF0000;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .account-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .profile-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .order-history {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .order-card {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 1rem;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .order-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .status-pending { background: #FFA500; color: white; }
+        .status-accepted { background: #4CAF50; color: white; }
+        .status-completed { background: #2196F3; color: white; }
+        .status-cancelled { background: #f44336; color: white; }
+
+        .order-items {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .track-btn {
+            background: #000000;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .track-btn:hover {
+            background: #FF0000;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1 class="logo">TuckDash</h1>
+            <div class="nav-buttons">
+                <a href="menu.html" class="nav-btn">Menu</a>
+                <button class="nav-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="account-container">
+        <div class="profile-section">
+            <h2>My Profile</h2>
+            <div id="profileInfo">
+                <!-- Profile info will be populated here -->
+            </div>
+        </div>
+
+        <div class="order-section">
+            <h2>Current Orders</h2>
+            <div id="currentOrders">
+                <!-- Current orders will be populated here -->
+            </div>
+        </div>
+
+        <div class="order-history">
+            <h2>Order History</h2>
+            <div id="orderList">
+                <!-- Order history will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        window.onload = function() {
+            currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'index.html';
+                return;
+            }
+            loadUserData();
+            // Refresh orders every 30 seconds
+            setInterval(loadUserData, 30000);
+        }
+
+        function loadUserData() {
+            // Display profile info
+            document.getElementById('profileInfo').innerHTML = `
+                <p><strong>Name:</strong> ${currentUser.name}</p>
+                <p><strong>Email:</strong> ${currentUser.email}</p>
+                <p><strong>Dorm:</strong> ${currentUser.dorm || 'Not set'}</p>
+            `;
+
+            // Load all orders
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const userOrders = orders.filter(order => 
+                order.customer.email === currentUser.email
+            );
+
+            // Separate current and past orders
+            const currentOrders = userOrders.filter(order => 
+                order.status !== 'completed' && order.status !== 'cancelled'
+            );
+            const pastOrders = userOrders.filter(order => 
+                order.status === 'completed' || order.status === 'cancelled'
+            );
+
+            // Display current orders
+            document.getElementById('currentOrders').innerHTML = currentOrders.length ? 
+                currentOrders.map(order => createOrderCard(order, true)).join('') :
+                '<p>No active orders</p>';
+
+            // Display order history
+            document.getElementById('orderList').innerHTML = pastOrders.length ?
+                pastOrders.map(order => createOrderCard(order, false)).join('') :
+                '<p>No past orders</p>';
+        }
+
+        function createOrderCard(order, isCurrent) {
+            const orderDate = new Date(order.timestamp).toLocaleString();
+            const statusClass = getStatusClass(order.status);
+            
+            return `
+                <div class="order-card">
+                    <div class="order-header">
+                        <h3>Order #${order.id.slice(-4)}</h3>
+                        <span class="order-status ${statusClass}">
+                            ${order.status.toUpperCase()}
+                        </span>
+                    </div>
+                    
+                    <p><strong>Ordered:</strong> ${orderDate}</p>
+                    
+                    <div class="order-items">
+                        ${order.items.map(item => `
+                            <div class="order-item">
+                                <span>${item.item}</span>
+                                <span>$${item.price.toFixed(2)}</span>
+                                ${item.customizations ? 
+                                    `<small>(${item.customizations.join(', ')})</small>` : 
+                                    ''}
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="order-total">
+                        <p><strong>Subtotal:</strong> $${order.subtotal.toFixed(2)}</p>
+                        <p><strong>Dasher Fee:</strong> $3.00</p>
+                        <p><strong>Tip:</strong> $${order.tip.toFixed(2)}</p>
+                        <p><strong>Total:</strong> $${order.total.toFixed(2)}</p>
+                    </div>
+
+                    ${isCurrent ? `
+                        <button class="track-btn" onclick="trackOrder('${order.id}')">
+                            Track Order
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'pending': 'status-pending',
+                'accepted': 'status-accepted',
+                'completed': 'status-completed',
+                'cancelled': 'status-cancelled',
+                'at_tuck': 'status-at-tuck',
+                'on_way': 'status-on-way',
+                'arrived': 'status-arrived'
+            };
+            return classes[status] || '';
+        }
+
+        function trackOrder(orderId) {
+            window.location.href = `order-tracking.html?orderId=${orderId}`;
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html> 
