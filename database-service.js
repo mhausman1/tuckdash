@@ -1,4 +1,4 @@
-import { ref, set, get, update, remove, query, orderByChild, push, startAt, endAt, limitToLast } from "firebase/database";
+import { ref, set, get, update, remove, query, orderByChild, push, startAt, endAt, limitToLast, equalTo, onValue } from "firebase/database";
 import { db } from './firebase-config.js';
 
 export const DatabaseService = {
@@ -49,13 +49,13 @@ export const DatabaseService = {
     },
 
     async updateOrder(orderId, updates) {
-        const updates = {
+        const updateData = {
             [`orders/${orderId}`]: {
                 ...updates,
                 updatedAt: new Date().toISOString()
             }
         };
-        await update(ref(db), updates);
+        await update(ref(db), updateData);
     },
 
     // Real-time order updates
@@ -79,12 +79,6 @@ export const DatabaseService = {
         await update(ref(db), updates);
     },
 
-    async getPendingOrders() {
-        const ordersRef = ref(db, 'orders');
-        const pendingQuery = query(ordersRef, orderByChild('status'), equalTo('pending'));
-        const snapshot = await get(pendingQuery);
-        return Object.values(snapshot.val() || {});
-    },
 
     async getDasherOrders(dasherId) {
         const ordersRef = ref(db, 'orders');
